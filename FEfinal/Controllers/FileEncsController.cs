@@ -9,8 +9,7 @@ using System.Security.Cryptography;
 using System.IO;
 using System.Text;
 using System;
-
-
+using System.Globalization;
 
 namespace FEfinal.Controllers
 {
@@ -151,7 +150,41 @@ namespace FEfinal.Controllers
             return tempStr;
         }
 
- 
+        public bool IsDateValid(string dateString)
+        {
+
+        
+            string[] formats = {"M/d/yyyy h:mm:ss tt", "M/d/yyyy h:mm tt",
+                         "MM/dd/yyyy hh:mm:ss", "M/d/yyyy h:mm:ss",
+                         "M/d/yyyy hh:mm tt", "M/d/yyyy hh tt",
+                         "M/d/yyyy h:mm", "M/d/yyyy h:mm",
+                         "MM/dd/yyyy hh:mm", "M/dd/yyyy hh:mm"};
+
+            DateTime dateValue;
+
+            // Only US format.  This can be changed to include european formats too
+
+            if (DateTime.TryParseExact(dateString, formats,
+                                    new CultureInfo("en-US"),
+                                    DateTimeStyles.None,
+                                    out dateValue))
+            {
+                // we are ignoring exact time, time zones etc.
+                if (DateTime.Now.Date <= dateValue.Date)
+                    return true;
+            }
+            return false;
+        }
+        static string GetFileNameFromUrl(string url)
+        {
+            Uri SomeBaseUri = new Uri("c:\\temp");
+            Uri uri;
+            if (!Uri.TryCreate(url, UriKind.Absolute, out uri))
+                uri = new Uri(SomeBaseUri, url);
+
+            return Path.GetFileName(uri.LocalPath);
+        }
+
         private FEfinalContext db = new FEfinalContext();
 
         // GET: FileEncs
@@ -173,6 +206,26 @@ namespace FEfinal.Controllers
                 return HttpNotFound();
             }
             fileEnc.Enc_String = DecryptaString(fileEnc.Enc_String);
+            var strarray = fileEnc.Enc_String.Split(new string[] { "||" }, StringSplitOptions.None);
+
+            if (IsDateValid (strarray[2]))
+            {
+                try
+                {
+                    string localpath = "C:\\temp\\" + GetFileNameFromUrl(strarray[0]);
+                    // Need to figure out the download file name.  It needs to be unique.
+                    using (WebClient wc = new WebClient())
+                    { 
+                        wc.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.33 Safari/537.36 Edge / 12.246");
+                        wc.DownloadFile(new System.Uri(strarray[0]),
+                        localpath);
+                    }
+                } catch
+                {
+                    // give error message here.
+                }
+            }
+
             return View(fileEnc);
         }
 
@@ -192,7 +245,7 @@ namespace FEfinal.Controllers
         {
             if (ModelState.IsValid)
             {
-                // fileEnc.Enc_String = EncryptToString(fileEnc.FileLocation);
+                fileEnc.ExpiryDate = fileEnc.ExpiryDate.Date;
                 var compString = fileEnc.FileLocation + "||" + fileEnc.FileType + "||" + fileEnc.ExpiryDate.ToString();
                 fileEnc.Enc_String = EncryptaString(compString);
                 db.FileEncs.Add(fileEnc);
