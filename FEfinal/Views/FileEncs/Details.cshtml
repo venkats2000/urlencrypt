@@ -1,0 +1,50 @@
+﻿@model FEfinal.Models.FileEnc
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>FileEnc</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.FileLocation)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.FileLocation)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ExpiryDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ExpiryDate)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.FileType)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.FileType)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Enc_String)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Enc_String)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.ID }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>
